@@ -22,13 +22,14 @@ class Graph
 	int numberOfVertices;
 
 public:
-	void fill();
-    void show();
-    void add_edge(int first, int second, double weight);
-	void transposition(Graph & before);
-	friend void DFSstack(int v, bool * visited, stack<int> & S, Graph& graph);
-	int howMany() {return numberOfVertices;};
-	void Kosajaru();
-	void DFSprint(int v, bool * visited, Graph& graf, list<int>& skladowe);
+	void fill(); //pobiera dane ze standardowego wejscia i wypelnia nimi graf
+    void show(); //wypisuje zawartosc grafu wraz z wagami krawedzi
+    void add_edge(int first, int second, double weight); //dodaje krawedz; w przypadku proby dodania tej samej krawedzi zmienia jej wage
+	void transposition(Graph & before); //transpozycja grafu - potrzebna w algorytmie Kosajaru
+	friend void depthFirstTraversal(int v, bool * visited, stack<int> & S, Graph& graph); //przejscie grafu wglab z wrzuceniem na stos odwiedzonych wierzcholkow
+	int howMany() {return numberOfVertices;}; //zwraca liczbe wierzcholkow
+	void kosajaru();
+	friend void collectSCC(int v, bool * visited, Graph& graf, list<int>& skladowe); //przechodzi przez graf ktory zostal poddany transpozycji
+																				   //zapisujac silnie spojne skladowe 
 };
 #endif // GRAPH_H

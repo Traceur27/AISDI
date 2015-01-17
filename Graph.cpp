@@ -1,5 +1,6 @@
 #include <iostream>
 #include <stdio.h>
+#include <stdlib.h>
 #include <stack>
 #include <list>
 #include "Graph.h"
@@ -13,7 +14,7 @@ void Graph::fill()
     while(1)
     {
         cin >> a >> b;
-		if(getchar() != '\n')
+		if(getchar() != '\n') //pobiera kolejne pary liczb do czasu natrafienia spacji dwóch cyfrach
 			break;
         Vertices.push_back(vertex(i,a,b));
 		++i;
@@ -21,12 +22,17 @@ void Graph::fill()
 	numberOfVertices = i;
     int c, d;
     double e;
-    c = (int) a;
+    c = (int) a; //w takim przypadku rzutuje dwie wartosci double na inty(z zalozen zadania wiemy ze musza byc to liczby calkowite) i pobiera trzecia
     d = (int) b;
     cin >> e;
 
     while(getchar() != EOF)
     {
+		if(c > numberOfVertices || d > numberOfVertices) //sprawdzam czy ktos nie probuje dodac krawedzi z nieistniejacym wierzcholkiem
+		{
+			printf("Proba dodania krawedzi z nieistniejacym wierzcholkiem: %d -> %d (%f)\n",c,d,e);
+			exit(1);
+		}
         add_edge(c,d,e);
         cin >> c >> d >> e;
     }
@@ -36,22 +42,32 @@ void Graph::fill()
 void Graph::add_edge(int first, int second, double weight)
 {
     vector<vertex>::iterator it;
-    for(it = Vertices.begin(); it != Vertices.end(); ++it)
+    for(it = Vertices.begin(); it != Vertices.end(); ++it) //znajduje wierzcholek o podanym numerze
         if((*it).number == first)
             break;
+
 	if(it != Vertices.end())
+	{
+		vector<pair<int,double> >::iterator itt;
+		for(itt = (*it).edges.begin(); itt != (*it).edges.end(); ++itt)
+			if((*itt).first == second)
+				{
+					(*itt).second = weight; //sprawdzam czy podana krawedz juz istnieje - jesli tak to nadpisuje jej wage
+					return;
+				}
+	}
     (*it).edges.push_back(make_pair(second,weight));
     return;
 }
 
-void Graph::show()
+void Graph::show() //wypisuje wszystkie krawedzie wraz z wagami
 {
 	vector<pair<int,double> >::iterator itt;
     vector<vertex>::iterator it;
     for(it = Vertices.begin(); it != Vertices.end(); ++it){
         cout << (*it).number << "   "; //<< (*it).y << "      " << (*((*it).edges.begin())).first << "    " << (*((*it).edges.begin())).second <<  endl;
 		for(itt = (*it).edges.begin(); itt != (*it).edges.end(); ++itt)
-		cout << (*itt).first;
+		cout << (*itt).first << " waga: " <<  (*itt).second << " ";
 		cout << "\n";
 	}
 }
@@ -59,22 +75,22 @@ void Graph::show()
 void Graph::transposition(Graph & before)
 {
 	vector<vertex>::iterator it;
-    for(it = before.Vertices.begin(); it != before.Vertices.end(); ++it)
+    for(it = before.Vertices.begin(); it != before.Vertices.end(); ++it) //podany graf wypelniam wierzcholkami takimi samymi jak zadany
 		Vertices.push_back(vertex((*it).number,(*it).x,(*it).y));
 
 	vector<pair<int,double> >::iterator itt;
 	for(it = before.Vertices.begin(); it != before.Vertices.end(); ++it)
 	{
-		for(itt = (*it).edges.begin(); itt != (*it).edges.end(); ++itt)
+		for(itt = (*it).edges.begin(); itt != (*it).edges.end(); ++itt)  //jezeli wierzcholek x mial krawedzie do y i z to w wierzcholki y i z wpisuje x
 			add_edge((*itt).first, (*it).number, (*itt).second);
 	}
 }
 
-void DFSstack(int v, bool * visited, stack<int> & S, Graph& graph)
+void depthFirstTraversal(int v, bool * visited, stack<int> & S, Graph& graph)
 {
 	visited[v] = true;
 	vector<Graph::vertex>::iterator it;
-	for(it = graph.Vertices.begin(); it != graph.Vertices.end(); ++it)
+	for(it = graph.Vertices.begin(); it != graph.Vertices.end(); ++it) //znajduje wierzcholek o podanym numerze
 	{
 		if(v == (*it).number)
 			break;
@@ -83,12 +99,12 @@ void DFSstack(int v, bool * visited, stack<int> & S, Graph& graph)
 	for(itt = (*it).edges.begin(); itt != (*it).edges.end(); ++ itt)
 	{
 		if(!visited[(*itt).first]) 
-			DFSstack((*itt).first, visited, S, graph);
+			depthFirstTraversal((*itt).first, visited, S, graph); //przechodzac w glab wrzucam wierzcholki na stos
 	}
 	S.push(v);
 }
 
-void Graph::DFSprint(int v, bool * visited, Graph& graph, list<int>& skladowe)
+void collectSCC(int v, bool * visited, Graph& graph, list<int>& skladowe)
 {
 	visited[v] = true;
 	skladowe.push_back(v);
@@ -102,12 +118,12 @@ void Graph::DFSprint(int v, bool * visited, Graph& graph, list<int>& skladowe)
 	for(itt = (*it).edges.begin(); itt != (*it).edges.end(); ++ itt)
 	{
 		if(!visited[(*itt).first]) 
-			DFSprint((*itt).first, visited, graph, skladowe);
+			collectSCC((*itt).first, visited, graph, skladowe);
 	}
 
 }
 
-void Graph::Kosajaru()
+void Graph::kosajaru()
 {
 	Graph two;
 	two.transposition(*this);
@@ -117,7 +133,7 @@ void Graph::Kosajaru()
 		visited[i] = false;
 
 	stack<int> S;
-	DFSstack(0,visited, S, *this);
+	depthFirstTraversal(0,visited, S, *this);
 
 	for(i = 0; i< this->howMany();++i)
 		visited[i] = false;
@@ -132,7 +148,7 @@ void Graph::Kosajaru()
 		S.pop();     
     	if(!visited[v])
     	{
-      		DFSprint(v,visited,two, skladowe);
+      		collectSCC(v,visited,two, skladowe);
 			if((skladowe.size() % 2) == 1)
 			{
 				for(it = skladowe.begin(); it != skladowe.end(); ++it)
