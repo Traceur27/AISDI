@@ -133,7 +133,9 @@ void Graph::kosajaru()
 		visited[i] = false;
 
 	stack<int> S;
-	depthFirstTraversal(0,visited, S, *this);
+	for(i = 0; i< this->howMany();++i)
+		if(!visited[i])
+			depthFirstTraversal(i,visited, S, *this);
 
 	for(i = 0; i< this->howMany();++i)
 		visited[i] = false;
