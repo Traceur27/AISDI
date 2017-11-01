@@ -1,5 +1,6 @@
 #include <iostream>
 #include <stack>
+
 #include "Graph.h"
 
 
@@ -7,10 +8,9 @@ using namespace std;
 
 int main()
 {
-    Graph one;
-	one.fill();
-    one.kosajaru();
-	//one.show();
+    Graph graph;
+	graph.fill();
+    graph.kosajaru();
     return 0;
 }
 

@@ -1,8 +1,9 @@
+#include <list>
 #include <iostream>
+#include <stack>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stack>
-#include <list>
+
 #include "Graph.h"
 
 using namespace std;

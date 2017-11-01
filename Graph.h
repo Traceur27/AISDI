@@ -1,8 +1,9 @@
 #ifndef GRAPH_H
 #define GRAPH_H
-#include <vector>
-#include <stack>
+
 #include <list>
+#include <stack>
+#include <vector>
 
 using namespace std;
 
